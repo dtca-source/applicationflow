@@ -6,6 +6,19 @@
  */
 
 const express = require('express');
+// add near the top, after `const app = express()`
+app.get('/', (req, res) => {
+  res.status(200).type('text/plain').send('DTCA backend up ✅');
+});
+
+// make sure health exists
+app.get('/health', (req, res) => res.send('ok'));
+
+// and make sure we bind correctly
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server listening on ${PORT}`);
+});
 const cors = require('cors');
 const multer = require('multer');
 const PDFDocument = require('pdfkit');
