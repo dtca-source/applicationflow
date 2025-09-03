@@ -246,6 +246,10 @@ function pushDropdownOrText(custom_fields, fieldId, raw) {
 // Routes
 
 app.get('/health', (_req, res) => res.type('text/plain').send('ok'));
+// Root path so the public URL does not 502 when hitting "/"
+app.get('/', (_req, res) => {
+  res.status(200).type('text/plain').send('DTCA backend up ✅');
+});
 
 // Introspect loaded dropdowns
 app.get('/debug/options', (_req, res) => {
@@ -703,8 +707,8 @@ app.use((err, req, res, next) => {
 // Boot
 (async () => {
   await warmDropdowns();
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server listening on ${PORT}`);
   });
 })();
 
