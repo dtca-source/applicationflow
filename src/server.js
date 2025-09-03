@@ -686,8 +686,10 @@ app.post('/api/guarantee-sign', express.json({ limit: '5mb' }), async (req, res)
   }
 });
 // Friendly default for any unhandled GETs (prevents "Cannot GET /")
-app.get('*', (req, res, next) => {
-  // Do not swallow API paths or non-GET methods
+// Friendly default for any unhandled GETs (prevents "Cannot GET /")
+// NOTE: In Express 5 (path-to-regexp v6), a literal '*' path is invalid.
+// Use a no-path middleware and gate on method/path instead.
+app.use((req, res, next) => {
   if (req.method !== 'GET') return next();
   if (req.path.startsWith('/api/')) return next();
   if (req.path === '/health' || req.path.startsWith('/debug/')) return next();
