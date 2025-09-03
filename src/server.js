@@ -40,6 +40,8 @@ const CLICKUP_LIST_ID = process.env.CLICKUP_LIST_ID;
 
 // Custom-field IDs from .env (and a few known hard-coded where you asked)
 const CF = {
+  ENGAGEMENT_REQ: process.env.CF_ENGAGEMENT_REQ,        // long text
+  ADDITIONAL_COMMENTS: process.env.CF_ADDITIONAL_COMMENTS, // long text
   EMAIL: process.env.CF_EMAIL,                                   // short text
   PHONE: process.env.CF_PHONE,                                   // short text
   LOCATION: process.env.CF_LOCATION,                             // dropdown or text
@@ -279,67 +281,69 @@ app.post('/api/apply', upload.single('videoFile'), async (req, res) => {
       });
     }
 
-    // Build custom_fields
-    const custom_fields = [];
+   // Build custom_fields
+const custom_fields = [];
 
-    // Email
-    if (CF.EMAIL && p.email) custom_fields.push({ id: CF.EMAIL, value: p.email });
+// Email
+if (CF.EMAIL && p.email) custom_fields.push({ id: CF.EMAIL, value: p.email });
 
-    // Phone (already normalized to E.164 client-side)
-    if (CF.PHONE && p.phone) custom_fields.push({ id: CF.PHONE, value: p.phone });
+// Phone (already normalized to E.164 client-side)
+if (CF.PHONE && p.phone) custom_fields.push({ id: CF.PHONE, value: p.phone });
 
-    // Location + other
-    if (CF.LOCATION && p.location) {
-      pushDropdownOrText(custom_fields, CF.LOCATION, p.location);
-    }
-    if (CF.OTHER_LOCATION && p.otherLocation) {
-      custom_fields.push({ id: CF.OTHER_LOCATION, value: p.otherLocation });
-    }
+// Location + other
+if (CF.LOCATION && p.location) {
+  pushDropdownOrText(custom_fields, CF.LOCATION, p.location);
+}
+if (CF.OTHER_LOCATION && p.otherLocation) {
+  custom_fields.push({ id: CF.OTHER_LOCATION, value: p.otherLocation });
+}
 
-    // Work eligibility
-    pushDropdownOrText(custom_fields, CF.WORK_ELIGIBILITY, p.workEligibility);
+// Work eligibility
+pushDropdownOrText(custom_fields, CF.WORK_ELIGIBILITY, p.workEligibility);
 
-    // Reliable computer (Yes/No)
-    pushDropdownOrText(custom_fields, CF.RELIABLE_COMPUTER, p.reliableComputer);
+// Reliable computer (Yes/No)
+pushDropdownOrText(custom_fields, CF.RELIABLE_COMPUTER, p.reliableComputer);
 
-    // Background check (Yes/No)
-    pushDropdownOrText(custom_fields, CF.BACKGROUND_CHECK, p.backgroundCheck);
+// Background check (Yes/No)
+pushDropdownOrText(custom_fields, CF.BACKGROUND_CHECK, p.backgroundCheck);
 
-    // Experience description
-    if (CF.EXPERIENCE_DESC && p.experienceDescription) {
-      custom_fields.push({ id: CF.EXPERIENCE_DESC, value: p.experienceDescription });
-    }
+/*  -------------------- IMPORTANT CHANGE --------------------
+    Experience & Certifications are now description-only.
+    We DO NOT push these to custom fields anymore.
+    (They’re still included in buildTaskDescription(p).)
+---------------------------------------------------------------- */
+// if (CF.EXPERIENCE_DESC && p.experienceDescription) {
+//   custom_fields.push({ id: CF.EXPERIENCE_DESC, value: p.experienceDescription });
+// }
+// if (CF.CERT_COMPLETED && p.certCompleted) {
+//   pushDropdownOrText(custom_fields, CF.CERT_COMPLETED, p.certCompleted);
+// }
+// if (CF.CERT_LISTED && p.certificationsListed) {
+//   custom_fields.push({ id: CF.CERT_LISTED, value: p.certificationsListed });
+// }
 
-    // Certifications
-    if (CF.CERT_COMPLETED && p.certCompleted) {
-      pushDropdownOrText(custom_fields, CF.CERT_COMPLETED, p.certCompleted);
-    }
-    if (CF.CERT_LISTED && p.certificationsListed) {
-      custom_fields.push({ id: CF.CERT_LISTED, value: p.certificationsListed });
-    }
+// Education + other (leave as-is unless you also want this description-only)
+pushDropdownOrText(custom_fields, CF.EDUCATION, p.education);
+if (CF.OTHER_EDUCATION && p.otherEducation) {
+  custom_fields.push({ id: CF.OTHER_EDUCATION, value: p.otherEducation });
+}
 
-    // Education + other
-    pushDropdownOrText(custom_fields, CF.EDUCATION, p.education);
-    if (CF.OTHER_EDUCATION && p.otherEducation) {
-      custom_fields.push({ id: CF.OTHER_EDUCATION, value: p.otherEducation });
-    }
+// Class availability (Yes/No)
+pushDropdownOrText(custom_fields, CF.CLASS_SCHEDULE, p.classSchedule);
 
-    // Class availability (Yes/No)
-    pushDropdownOrText(custom_fields, CF.CLASS_SCHEDULE, p.classSchedule);
+// Commitment (Yes/No)
+pushDropdownOrText(custom_fields, CF.COMMITMENT_LEVEL, p.commitmentLevel);
 
-    // Commitment (Yes/No)
-    pushDropdownOrText(custom_fields, CF.COMMITMENT_LEVEL, p.commitmentLevel);
+// Heard about us
+pushDropdownOrText(custom_fields, CF.HEARD_ABOUT, p.heardAbout);
 
-    // Heard about us
-    pushDropdownOrText(custom_fields, CF.HEARD_ABOUT, p.heardAbout);
-
-    // Engagement requirement ack & comments
-    if (CF.ENGAGEMENT_REQ && p.engagementText) {
-      custom_fields.push({ id: CF.ENGAGEMENT_REQ, value: p.engagementText });
-    }
-    if (CF.ADDITIONAL_COMMENTS && p.additionalComments) {
-      custom_fields.push({ id: CF.ADDITIONAL_COMMENTS, value: p.additionalComments });
-    }
+// Engagement requirement ack & comments
+if (CF.ENGAGEMENT_REQ && p.engagementText) {
+  custom_fields.push({ id: CF.ENGAGEMENT_REQ, value: p.engagementText });
+}
+if (CF.ADDITIONAL_COMMENTS && p.additionalComments) {
+  custom_fields.push({ id: CF.ADDITIONAL_COMMENTS, value: p.additionalComments });
+}
 
     const body = {
       name: p.fullName || `Application ${new Date().toISOString()}`,
@@ -681,6 +685,15 @@ app.post('/api/guarantee-sign', express.json({ limit: '5mb' }), async (req, res)
     res.status(500).json({ ok:false, error:'server_error' });
   }
 });
+// Friendly default for any unhandled GETs (prevents "Cannot GET /")
+app.get('*', (req, res, next) => {
+  // Do not swallow API paths or non-GET methods
+  if (req.method !== 'GET') return next();
+  if (req.path.startsWith('/api/')) return next();
+  if (req.path === '/health' || req.path.startsWith('/debug/')) return next();
+  return res.status(200).type('text/plain').send('DTCA backend up ✅');
+});
+
 // ---------------------------------------------------------------------------
 // Error handler: normalize Multer and other errors to friendly JSON
 app.use((err, req, res, next) => {
