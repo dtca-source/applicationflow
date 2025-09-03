@@ -1,0 +1,77 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 name: dtca-apply\
+services:\
+  - name: app\
+    type: web\
+    routes:\
+      - path: /\
+    ports:\
+      - port: 8787          # <-- match your app's PORT (8787)\
+    git:\
+      repo: dtca-source/applicationflow\
+      branch: main\
+    docker:\
+      dockerfile: Dockerfile\
+    env:\
+      - name: NODE_ENV\
+        value: production\
+      - name: PORT\
+        value_from_secret: PORT\
+\
+      - name: CLICKUP_TOKEN\
+        value_from_secret: CLICKUP_TOKEN\
+      - name: CLICKUP_TEAM_ID\
+        value_from_secret: CLICKUP_TEAM_ID\
+      - name: CLICKUP_LIST_ID\
+        value_from_secret: CLICKUP_LIST_ID\
+      - name: CLICKUP_CUSTOM_TASK_IDS\
+        value_from_secret: CLICKUP_CUSTOM_TASK_IDS\
+\
+      - name: CF_CERT_LISTED\
+        value_from_secret: CF_CERT_LISTED\
+      - name: CF_CERT_COMPLETED\
+        value_from_secret: CF_CERT_COMPLETED\
+      - name: CF_ENGAGEMENT_REQ\
+        value_from_secret: CF_ENGAGEMENT_REQ\
+      - name: CF_EXPERIENCE_DESC\
+        value_from_secret: CF_EXPERIENCE_DESC\
+      - name: CF_EMAIL\
+        value_from_secret: CF_EMAIL\
+      - name: CF_LOCATION\
+        value_from_secret: CF_LOCATION\
+      - name: CF_RELIABLE_COMPUTER\
+        value_from_secret: CF_RELIABLE_COMPUTER\
+      - name: CF_ENROLL_REASONS\
+        value_from_secret: CF_ENROLL_REASONS\
+      - name: CF_OTHER_LOCATION\
+        value_from_secret: CF_OTHER_LOCATION\
+      - name: CF_EDUCATION\
+        value_from_secret: CF_EDUCATION\
+      - name: CF_ADDITIONAL_COMMENTS\
+        value_from_secret: CF_ADDITIONAL_COMMENTS\
+      - name: CF_CLASS_SCHEDULE\
+        value_from_secret: CF_CLASS_SCHEDULE\
+      - name: CF_PHONE\
+        value_from_secret: CF_PHONE\
+      - name: CF_DCA_VIDEO_URL\
+        value_from_secret: CF_DCA_VIDEO_URL\
+      - name: CF_COHORT\
+        value_from_secret: CF_COHORT\
+      - name: CF_PAYMENT_METHOD\
+        value_from_secret: CF_PAYMENT_METHOD\
+\
+      # optional cohort option IDs if your code reads them:\
+      - name: COHORT_OCT_ID\
+        value_from_secret: COHORT_OCT_ID\
+      - name: COHORT_JAN_ID\
+        value_from_secret: COHORT_JAN_ID\
+\
+      # If you actually use an attachment field for the video, include:\
+      # - name: CF_DCA_VIDEOS\
+      #   value_from_secret: CF_DCA_VIDEOS}
